@@ -24,6 +24,7 @@ CHAPTER_ONLY = re.compile(r'^\d+$')
 VERSE_LINE = re.compile(r'^(\d+)([\u202F\u00A0\s]+)(.*)')
 UNDERSCORE_ONLY = re.compile(r'^_+$')
 BOOK_TITLE_DASHED = re.compile(r'^-+\s*(.+?)\s*-+$')
+BOOK_CHAPTER_LINE = re.compile(r'^(.+?)\s+(\d+)$')  # Added missing regex
 
 # ---------------- TOC ----------------
 def add_toc(document):
@@ -74,9 +75,15 @@ with open(INPUT_FILE, 'r', encoding='utf-8') as f:
             p.paragraph_format.space_after = Pt(16)
             continue
 
-        # Chapter number line → store only
+        # Chapter number alone (e.g. "16")
         if CHAPTER_ONLY.match(line):
             pending_chapter = line
+            continue
+
+        # Book + chapter (e.g. "Genesis 16", "John 3")
+        book_chapter = BOOK_CHAPTER_LINE.match(line)
+        if book_chapter:
+            pending_chapter = book_chapter.group(2)  # only the number
             continue
 
         # Verse lines
