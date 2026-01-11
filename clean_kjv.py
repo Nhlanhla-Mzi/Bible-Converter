@@ -3,7 +3,7 @@ from docx import Document
 from docx.shared import Pt
 
 INPUT_FILE = "kjv_formatted.txt"
-OUTPUT_FILE = "KJV_Cleaned.docx"
+OUTPUT_FILE = "KJV_Cleaned_Final.docx"
 
 doc = Document()
 
