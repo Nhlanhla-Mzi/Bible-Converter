@@ -1,4 +1,5 @@
 import pythonbible as bible
+import re
 
 # 1. Define your custom book order
 CUSTOM_ORDER = [
@@ -17,7 +18,6 @@ CUSTOM_ORDER = [
 ]
 
 # 2. Map common book name variations to a standard name.
-# This helps if your source file uses abbreviations or different formats.
 BOOK_NAME_MAP = {
     "Gen": "Genesis",
     "Exo": "Exodus",
@@ -92,7 +92,6 @@ def standardize_book_name(raw_name):
     # Remove numbers or "The Book of" prefixes if present
     raw_name = raw_name.replace("The Book of", "").strip()
     # If the name starts with a number, separate it (e.g., "1Samuel" -> "1 Samuel")
-    import re
     raw_name = re.sub(r'^(\d)([A-Za-z])', r'\1 \2', raw_name)
 
     # Check mapping, otherwise assume it's already standard
@@ -100,8 +99,9 @@ def standardize_book_name(raw_name):
 
 def parse_source_file(filepath):
     """Reads your source Bible file and returns a dictionary organized by book and chapter."""
-    # This structure: { "Genesis": { 1: "text of Gen 1", 2: "text of Gen 2", ... }, ... }
     bible_dict = {}
+    
+    print(f"Opening file: {filepath}")  # Debug line
 
     with open(filepath, 'r', encoding='utf-8') as f:
         current_book = None
@@ -113,9 +113,7 @@ def parse_source_file(filepath):
             if not line:
                 continue
 
-            # Check if the line looks like a book/chapter header (e.g., "Genesis 1", "Matt 3:1")
-            # This regex looks for a book name (words and numbers) followed by a space and digits.
-            import re
+            # Check if the line looks like a book/chapter header
             match = re.match(r'^([\w\d\s]+)\s+(\d+)', line)
             if match:
                 # Save the previous chapter's text if we have one
@@ -126,8 +124,6 @@ def parse_source_file(filepath):
                 raw_book = match.group(1).strip()
                 current_book = standardize_book_name(raw_book)
                 current_chapter = int(match.group(2))
-                # Optional: You might want to store the header line or skip it
-                # chapter_text.append(line) # Uncomment to keep the header in the text
             else:
                 # It's a verse line, add to the current chapter text
                 if current_book and current_chapter is not None:
@@ -154,12 +150,18 @@ def reorder_and_output(bible_dict, output_filepath):
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    input_file = "path/to/your/kjv_source.txt"  # Change this
-    output_file = "reordered_bible_by_chapter.txt"
-
+    # CHANGED: Use the actual file in your directory
+    input_file = "kjv_formatted.txt"  # Changed from "path/to/your/kjv_source.txt"
+    
+    # CHANGED: Output to overwrite the original file (or use a different name)
+    output_file = "kjv_formatted.txt"  # This will overwrite the original
+    
     print("Parsing source file...")
     parsed_bible = parse_source_file(input_file)
     print(f"Found {len(parsed_bible)} books.")
+    
+    # Debug: Show which books were found
+    print(f"Books found: {list(parsed_bible.keys())[:5]}...")  # Show first 5
 
     print("Reordering and writing output...")
     reorder_and_output(parsed_bible, output_file)
